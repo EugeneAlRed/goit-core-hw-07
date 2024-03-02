@@ -12,8 +12,8 @@ class Field:
 
 
 class Name(Field):
-    def is_valid(self,value):
-        return bool(value)
+    def get_name(self):
+        return str(self.value)
 
 
 class Phone(Field):
