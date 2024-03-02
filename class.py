@@ -24,7 +24,12 @@ class Phone(Field):
         super().__init__(value)
 
 class Birthday(Field):
-    pass
+    def __init__(self, value):
+        try:
+            self.value = datetime.strptime(value, '%d-%m-%Y')
+            return self.value
+        except ValueError:
+            raise
 
 class Record:
     def __init__(self, name):
