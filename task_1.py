@@ -154,5 +154,35 @@ def parse_input(user_input):
     cmd = cmd.strip().lower()
     return cmd, *args
 
+def main():
+    book = AddressBook()
+    print("Welcome to the assistant bot!")
+    while True:
+        user_input = input("Enter a command: ")
+        command, *args = parse_input(user_input)
+        if command in ["close", "exit"]:
+            print("Good bye!")
+            break
+        elif command == "hello":
+            print("How can I help you?")
+        elif command == "add":
+            if len(args) < 2:
+                print("Invalid command. Please provide both name and phone number")
+                continue
+            name, new_phone = args
+            record = Record(name)
+            record.add_phone(phone)
+            book.add_record(record)
+            print(f"{name:12}: {phone:12} ")
 
-    
+
+        # elif command == 'change':
+        #     print(change_contacts(args, contacts))
+        # elif command == "phone":
+        #     print(show_phone(args, contacts))
+        # elif command == 'all':
+        #     print("All contacts:")
+        #     for record in book.data.values():
+        #         print(record)
+        # else:
+        #     print("Invalid command.")
