@@ -1,6 +1,6 @@
 from collections import UserDict
 import re
-from datetime import datetime, timedelta
+from datetime import datetime
 
 
 class Field:
@@ -29,12 +29,16 @@ class Birthday(Field):
             self.value = datetime.strptime(value, '%d-%m-%Y')
             return self.value
         except ValueError:
-            raise
+            raise ValueError("Invalid date format. Use DD.MM.YYYY")
 
 class Record:
     def __init__(self, name):
         self.name = Name(name)
         self.phones = []
+        self.birthday = None
+    
+    def add_birthday(self, birthday):
+        self.birthday = Birthday(birthday)
 
     def add_phone(self, phone):
         self.phones.append(Phone(phone))
@@ -51,7 +55,7 @@ class Record:
         return [str(num) for num in self.phones if num.value == phone]
 
     def __str__(self):
-        return f"Contact name: {self.name.value}, phones: {'; '.join(num.value for num in self.phones)}"
+        return f"Contact name: {self.name.value}, phones: {'; '.join(num.value for num in self.phones)}, birthday: {self.birthday.value if self.birthday else 'Not indicated'}"
 
 
 class AddressBook(UserDict):
