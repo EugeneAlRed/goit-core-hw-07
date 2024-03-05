@@ -23,6 +23,7 @@ class Phone(Field):
             return "Invalid phone number format. The phone number must contain 10 digits"
         super().__init__(value)
 
+
 class Birthday(Field):
     def __init__(self, value):
         try:
@@ -31,12 +32,13 @@ class Birthday(Field):
         except ValueError:
             raise ValueError("Invalid date format. Use DD.MM.YYYY")
 
+
 class Record:
     def __init__(self, name):
         self.name = Name(name)
         self.phones = []
         self.birthday = None
-    
+
     def add_birthday(self, birthday):
         self.birthday = Birthday(birthday)
 
@@ -68,3 +70,89 @@ class AddressBook(UserDict):
     def delete(self, name):
         if name in self.data:
             del self.data[name]
+
+    def get_upcoming_birthdays(self):
+        date_now = datetime.today().date()
+        birthday = []
+        for user in self.data.values():
+            birthday_date = user['birthday']
+            birthday_date = str(date_now.year) + birthday_date[4:]
+            birthday_date = datetime.strptime(birthday_date, '%Y.%m.%d').date()
+            day_difference = (birthday_date - date_now).days
+            day_week = birthday_date.isoweekday()
+            if day_difference >= 0 and day_difference < 7:
+                if day_week < 6:
+                    birthday.append(
+                        {'name': user['name'], 'birthday': birthday_date.strftime('%Y.%m.%d')})
+                else:
+                    if (birthday_date + timedelta(day=2)).weekday() == 0:
+                        birthday.append({'name': user['name'], 'birthday': (
+                            birthday_date + timedelta(day=2)).strftime('%Y.%m.%d')})
+                    elif (birthday_date + timedelta(day=1)).weekday() == 0:
+                        birthday.append({'name': user['name'], 'birthday': (
+                            birthday_date + timedelta(day=1)).strftime('%Y.%m.%d')})
+        return birthday
+
+
+def input_error(func):
+    def inner(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except ValueError:
+            return "Give me name and phone please."
+        except KeyError:
+            return "No such name found"
+        except IndexError:
+            return "Not found"
+        except Exception as e:
+            return f'Error: {e}'
+
+    return inner
+
+
+@input_error
+def add_birthday(args, book):
+    name, birthday = args
+    try:
+        record = book.find(name)
+        if record:
+            record.add_birthday(birthday)
+            print(f"Birthday for {name} added.")
+        else:
+            print(f"{name} not found in address book")
+    except ValueError as e:
+        print(e)
+
+
+@input_error
+def show_birthday(args, book):
+    name = args[0]
+    record = book.find(name)
+    if record and record.birthday:
+        print(f"{name} birthday : {record.birthday.value}")
+    elif record and not record.birthday:
+        print(f"{name} no birthday information")
+    else:
+        print(f"{name} not found")
+
+
+@input_error
+def birthday(args, book):
+    upcoming_birthday = book.get_upcoming_birthday()
+    if upcoming_birthday:
+        print("Upcoming birthday:")
+        for record in upcoming_birthday:
+            print(
+                f" Don't forget to congratulate {record['name']} is {record['congratulation_date']}")
+    else:
+        print("No upcoming birthdays")
+
+
+@input_error
+def parse_input(user_input):
+    cmd, *args = user_input.split()
+    cmd = cmd.strip().lower()
+    return cmd, *args
+
+
+    
