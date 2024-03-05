@@ -169,20 +169,49 @@ def main():
             if len(args) < 2:
                 print("Invalid command. Please provide both name and phone number")
                 continue
-            name, new_phone = args
+            name, phone = args
             record = Record(name)
             record.add_phone(phone)
             book.add_record(record)
-            print(f"{name:12}: {phone:12} ")
+            print(f"{name}: {phone} ")
+        elif command == 'change':
+            if len(args) < 3:
+                print("Invalid command. Please provide name, old phone number and new phone number")
+                continue
+            name, old_phone, new_phone = args
+            record = book.find(name)
+            if record:
+                record.edit_phone(old_phone, new_phone)
+                print(f"Phone number changed for {name}")
+            else:
+                print(f"{name} not found")
+        elif command == "phone":
+            if not args:
+                print("Invalid command. Pleas provide name")
+            name = args[0]
+            found_phone = book.find(name)
+            if found_phone:
+                print(f'{found_phone}')
+            else:
+                print(f"{name} not found")
+        elif command == "all":
+            print("All contacts:")
+            for record in book.data.values():
+                print(record)
+        elif command == "add-birthday":
+            if len(args) < 2:
+                print(f"Please input name and date format DD.MM.YYYY")
+                continue
+            add_birthday(args, book)
+        elif command == "show-birthday":
+            if len(args) < 1:
+                print("No record found ")
+                continue
+            show_birthday(args, book)
+        elif command == "birthday":
+            birthday(args, book) 
+        else:
+            print("Invalid command.")
 
-
-        # elif command == 'change':
-        #     print(change_contacts(args, contacts))
-        # elif command == "phone":
-        #     print(show_phone(args, contacts))
-        # elif command == 'all':
-        #     print("All contacts:")
-        #     for record in book.data.values():
-        #         print(record)
-        # else:
-        #     print("Invalid command.")
+if __name__ == '__main__':
+    main()
