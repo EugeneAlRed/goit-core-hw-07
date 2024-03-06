@@ -98,25 +98,15 @@ class AddressBook(UserDict):
     def get_upcoming_birthdays(self):
         date_now = datetime.today().date()
         birthday = []
-        for user in self.data.values():
-            birthday_date = user['birthday']
-            birthday_date = str(date_now.year) + birthday_date[4:]
-            birthday_date = datetime.strptime(birthday_date, '%Y.%m.%d').date()
-            day_difference = (birthday_date - date_now).days
-            day_week = birthday_date.isoweekday()
-            if day_difference >= 0 and day_difference < 7:
-                if day_week < 6:
-                    birthday.append(
-                        {'name': user['name'], 'birthday': birthday_date.strftime('%Y.%m.%d')})
-                else:
-                    if (birthday_date + timedelta(day=2)).weekday() == 0:
-                        birthday.append({'name': user['name'], 'birthday': (
-                            birthday_date + timedelta(day=2)).strftime('%Y.%m.%d')})
-                    elif (birthday_date + timedelta(day=1)).weekday() == 0:
-                        birthday.append({'name': user['name'], 'birthday': (
-                            birthday_date + timedelta(day=1)).strftime('%Y.%m.%d')})
+        for record in self.values():
+            birthday_date = record.b
+            if birthday_date:
+                birthday_date_this_year = birthday_date.value.replace(year=date_now)
+                days_bettween = (birthday_date_this_year - date_now).date
+                if 0 <= days_bettween <= 7:
+                    birthdays.append({'name': record.name.value, 'birthday': bdate_this_year.strftime("%A, %d.%m.%Y")})
         return birthday
-
+    
 
 @input_error
 def add_birthday(args, book):
