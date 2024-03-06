@@ -45,11 +45,9 @@ class Phone(Field):
 class Birthday(Field):
     def __init__(self, value):
         try:
-            self.value = datetime.strptime(value, '%d-%m-%Y').date()
-            return self.value
+            datetime.strptime(value, '%d-%m-%Y')
         except ValueError:
             raise ValueError("Invalid date format. Use DD.MM.YYYY")
-        
 
 
 class Record:
@@ -72,16 +70,8 @@ class Record:
     def find_phone(self, phone):
         return [str(num) for num in self.phones if num.value == phone]
 
-    def add_birthday(self, bdate):
-        birthday = Birthday(bdate)
-        if not self.birthday:
-            self.birthday = birthday
-            return "Birthday added."
-
     def __str__(self):
-        birthday_str = str(self.birthday.value.strftime(
-            "%d.%m.%Y")) if self.birthday else 'Not specified'
-        return f"Contact name: {self.name.value:12} phones: {'; '.join(num.value for num in self.phones):12} birthday: {(birthday_str):12}"
+        return f"Contact name: {self.name.value} phones: {'; '.join(num.value for num in self.phones)}"
 
 
 class AddressBook(UserDict):
@@ -97,16 +87,22 @@ class AddressBook(UserDict):
 
     def get_upcoming_birthdays(self):
         date_now = datetime.today().date()
-        birthday = []
-        for record in self.values():
-            birthday_date = record.b
-            if birthday_date:
-                birthday_date_this_year = birthday_date.value.replace(year=date_now)
-                days_bettween = (birthday_date_this_year - date_now).date
-                if 0 <= days_bettween <= 7:
-                    birthdays.append({'name': record.name.value, 'birthday': bdate_this_year.strftime("%A, %d.%m.%Y")})
-        return birthday
-    
+        bday = []
+        for record in self:
+            if self[record].birthday:
+                birthday = datetime.strptime(
+                    str(self[record].birthday), "%d.%m.%Y").date()
+                birthday = birthday.replace(year=date_now.year)
+                days = (birthday - date_now).days
+                if days <= 7:
+                    if birthday.weekday() == 5:
+                        birthday += timedelta(days=2)
+                    elif birthday.weekday() == 6:
+                        birthday += timedelta(days=1)
+                    bday.append({'name': self[record].name.value, 'birthday': datetime.strftime(
+                        birthday, "%d.%m.%Y")})
+        return bday
+
 
 @input_error
 def add_birthday(args, book):
@@ -172,7 +168,25 @@ def show_phone(args, book):
 
 @input_error
 def show_all(book):
-    return str(book) if book else "Not found"
+    for k, v in book.items():
+        print(f"{k}: {v}")
+
+
+@input_error
+def add_birthday(args, book):
+    name, birthday = args
+    book.find(name).birthday = birthday
+    return "Birthday added."
+
+
+@input_error
+def show_birthday(args, book):
+    name = args[0]
+    return book.get(name)
+
+
+def birthdays(book):
+    return book.get_upcoming_birthdays()
 
 
 def main():
@@ -198,8 +212,8 @@ def main():
             print(add_birthday(args, book))
         elif command == "show-birthday":
             print(show_birthday(args, book))
-        elif command == "birthday":
-            print(birthdays(args, book))
+        elif command == "birthdays":
+            print(birthdays(book))
         else:
             print("Invalid command.")
 
